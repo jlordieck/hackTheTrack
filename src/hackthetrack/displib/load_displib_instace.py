@@ -8,6 +8,7 @@ from hackthetrack.timetablenetwork.components import Resource
 
 @dataclass(frozen=True, slots=True)
 class Operation:
+    index: int
     start_lb: float | None
     start_ub: float | None
     min_duration: float
@@ -42,29 +43,40 @@ class DisplibInstance:
 def _load_from_displib_format(path: Path) -> DisplibInstance:
     with open(path, "r") as file:
         parsed = json.load(file)
-
+    train_parser = TrainParser()
     return DisplibInstance(
-        trains=[_parse_train(train) for train in parsed["trains"]],
+        trains=[train_parser.parse_train(train) for train in parsed["trains"]],
         objectives=[_parse_objectives(obj) for obj in parsed["objective"]],
     )
 
 
-def _parse_train(data: dict) -> Train:
-    """Parse a single train from the DISPLIB format."""
-    operations = [
-        Operation(
-            start_lb=op["start_lb"] if "start_lb" in op else None,
-            start_ub=op.get("start_ub") if "start_ub" in op else None,
-            min_duration=op["min_duration"],
-            resources=[
-                Resource(name=res["resource"], release_time=res["release_time"])
-                for res in op["resources"]
-            ],
-            successors=op["successors"],
-        )
-        for op in data["operations"]
-    ]
-    return Train(id=data["id"], operations=operations)
+@dataclass(frozen=False, slots=True, init=False)
+class TrainParser:
+    _train_count: int
+
+    def __init__(self):
+        self._train_count = 0
+
+    def parse_train(self, operations: list[dict]) -> Train:
+        """Parse a single train from the DISPLIB format."""
+        operations = [
+            Operation(
+                index=i,
+                start_lb=op["start_lb"] if "start_lb" in op else None,
+                start_ub=op.get("start_ub") if "start_ub" in op else None,
+                min_duration=op["min_duration"],
+                resources=(
+                    [Resource(name=res["resource"], release_time=res.get("release_time", 0)) for res in op["resources"]]
+                    if "resources" in op
+                    else []
+                ),
+                successors=op["successors"],
+            )
+            for i, op in enumerate(operations)
+        ]
+        train = Train(id=self._train_count, operations=operations)
+        self._train_count += 1
+        return train
 
 
 def _parse_objectives(data: dict) -> OperationDelayObjective:
