@@ -13,6 +13,7 @@ class Resource:
 @unique
 class LinkType(BaseLinkType):
     DEPENDENCY = 1
+    PRECEDENCE = 2
 
 
 @dataclass(frozen=True, slots=True)

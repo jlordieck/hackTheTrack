@@ -8,6 +8,7 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "~3.10"
 ugraph = { version = "^0.72.0", extras = ["plotting"] }
+tqdm = "^4.62.3"
 
 [tool.poetry.urls]
 homepage = "https://www.ivt.ethz.ch/"
