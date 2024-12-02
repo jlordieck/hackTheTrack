@@ -1,2 +1,2 @@
 # hackTheTrack
-Lorem Ipsu,
+Lorem Ipsum
