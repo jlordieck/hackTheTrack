@@ -17,7 +17,7 @@ class LinkType(BaseLinkType):
 
 @dataclass(frozen=True, slots=True)
 class Link(LinkABC):
-    link_type: LinkType
+    pass
 
 
 @unique
@@ -27,16 +27,7 @@ class NodeType(BaseNodeType):
 
 @dataclass(frozen=True, slots=True)
 class Node(NodeABC):
-    node_type: NodeType
-    train_id: int
-    lower_bound: float | None
-    upper_bound: float | None
-
-
-@dataclass(frozen=True, slots=True)
-class Node(NodeABC):
     index: int
-    node_type: NodeType
     train_id: int
     start_lb: float | None
     start_ub: float | None

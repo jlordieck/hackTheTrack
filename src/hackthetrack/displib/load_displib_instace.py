@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import TypedDict
 
-from hackthetrack.timetablenetwork.components import Resource
+from hackthetrack.dependencygraph.components import Resource
 
 
 @dataclass(frozen=True, slots=True)
@@ -54,27 +54,32 @@ def _load_from_displib_format(path: Path) -> DisplibInstance:
 class TrainParser:
     _train_count: int
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._train_count = 0
 
     def parse_train(self, operations: list[dict]) -> Train:
         """Parse a single train from the DISPLIB format."""
-        operations = [
-            Operation(
-                index=i,
-                start_lb=op["start_lb"] if "start_lb" in op else None,
-                start_ub=op.get("start_ub") if "start_ub" in op else None,
-                min_duration=op["min_duration"],
-                resources=(
-                    [Resource(name=res["resource"], release_time=res.get("release_time", 0)) for res in op["resources"]]
-                    if "resources" in op
-                    else []
-                ),
-                successors=op["successors"],
-            )
-            for i, op in enumerate(operations)
-        ]
-        train = Train(id=self._train_count, operations=operations)
+        train = Train(
+            id=self._train_count,
+            operations=[
+                Operation(
+                    index=i,
+                    start_lb=op["start_lb"] if "start_lb" in op else None,
+                    start_ub=op.get("start_ub") if "start_ub" in op else None,
+                    min_duration=op["min_duration"],
+                    resources=(
+                        [
+                            Resource(name=res["resource"], release_time=res.get("release_time", 0))
+                            for res in op["resources"]
+                        ]
+                        if "resources" in op
+                        else []
+                    ),
+                    successors=op["successors"],
+                )
+                for i, op in enumerate(operations)
+            ],
+        )
         self._train_count += 1
         return train
 

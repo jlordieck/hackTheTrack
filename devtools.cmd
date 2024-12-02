@@ -61,22 +61,22 @@ goto :eof
 
 :check_types_and_conventions
     echo mypy results (type checking):
-    %poetry_cmd% mypy .\\src\\hackthetrack\\.
+    %poetry_cmd% mypy .\src\
     echo pylint results (are there any violated conventions):
-    %poetry_cmd% pylint .\\src\\hackthetrack\\.
+    %poetry_cmd% pylint .\src\
     goto :eof
 
 :check_maintainability_and_complexity
     echo maintainability as given by radon (score as number and Rank as letter)
-    %poetry_cmd% radon mi .\\src\\hackthetrack\\.
+    %poetry_cmd% radon mi .
     echo cyclomatic complexity as given by radon (score as number and Rank as letter)
-    %poetry_cmd% radon cc .\\src\\hackthetrack\\.
+    %poetry_cmd% radon cc .
     goto :eof
 
 :run_tests
     echo Running all unit tests...
     set PYTHONPATH=.\src
-    %poetry_cmd% python -m unittest discover -s test_ugraph
+    %poetry_cmd% python -m unittest discover -s hackthetrack_tests
     goto :eof
 
 :usage
