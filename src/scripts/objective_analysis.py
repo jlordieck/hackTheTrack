@@ -1,3 +1,4 @@
+from collections import defaultdict
 from pathlib import Path
 
 import plotly.graph_objects as go
@@ -14,7 +15,8 @@ for path_to_instance in filter(lambda x: True, displib_directory.glob("*.json"))
     network = DependencyGraph.from_displib_instance(instance)
 
     objectives = instance.objectives
-    thresholds, lower_bounds, upper_bounds, train_ids, objective_types = [], [], [], [], []
+    thresholds, lower_bounds, upper_bounds, train_ids, objective_types, coeffs = [], [], [], [], [], []
+    increments = defaultdict(int)
     objective_on_last_node = dict()
 
     all_train_ids = [train["id"] for train in instance.trains]
@@ -41,6 +43,10 @@ for path_to_instance in filter(lambda x: True, displib_directory.glob("*.json"))
         else:
             objective_types.append("linear" if objective["coeff"] != 0.0 else "step")
 
+        coeffs.append(objective["coeff"])
+        if objective["increment"] != 0:
+            increments[objective["increment"]] += 1
+
     all_trains_have_objective = len(set(train_ids)) == len(all_train_ids)
     logger.update_instance(path_to_instance.stem, "all trains have an objective", all_trains_have_objective)
 
@@ -60,6 +66,20 @@ for path_to_instance in filter(lambda x: True, displib_directory.glob("*.json"))
     if objective_type == "mixed":
         objective_type = "step" if all([objective_type == "step" for objective_type in objective_types]) else "mixed"
     logger.update_instance(path_to_instance.stem, "objective type", objective_type)
+
+    all_coeffs_are_one = all([coeff == 1.0 for coeff in coeffs if coeff != 0.0])
+    logger.update_instance(path_to_instance.stem, "all coeffs are 1", all_coeffs_are_one)
+
+    if increments:
+        logger.update_instance(path_to_instance.stem, "occurrences of penalty values for steps", dict(increments))
+
+    objective_to_ignore = [
+        threshold - lower < 0
+        for threshold, lower, objective_type in zip(thresholds, lower_bounds, objective_types)
+        if objective_type == "step"
+    ]
+    if objective_to_ignore:
+        logger.update_instance(path_to_instance.stem, "number of step objectives to ignore", sum(objective_to_ignore))
 
     plot = False
     if plot:
