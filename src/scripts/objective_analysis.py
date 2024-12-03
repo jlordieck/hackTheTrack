@@ -4,7 +4,9 @@ import plotly.graph_objects as go
 
 from hackthetrack.dependencygraph.network import DependencyGraph
 from hackthetrack.displib.load_displib_instance import DisplibInstance
+from hackthetrack.statistics_logger import StatisticsLogger
 
+logger = StatisticsLogger()
 displib_directory = Path("out/instances/displib_instances_phase1")
 
 for path_to_instance in displib_directory.glob("*.json"):
@@ -27,24 +29,24 @@ for path_to_instance in displib_directory.glob("*.json"):
             lower_bounds.append(0.0)
         else:
             lower_bounds.append(node.start_lb)
-        if node.start_ub is None:
-            upper_bounds.append(objective["threshold"])
-        else:
-            upper_bounds.append(node.start_ub)
+        upper_bounds.append(node.start_ub)
 
-    print(f"Instance {path_to_instance.stem}")
     if len(train_ids) == len(set(train_ids)):
-        print(f"at most one objective for every train.")
+        logger.update_instance(path_to_instance.stem, "one objective per train", True)
     else:
-        print(f"multiple objectives for at least one train.")
+        logger.update_instance(path_to_instance.stem, "one objective per train", False)
 
     if all([lb == threshold for lb, threshold in zip(lower_bounds, thresholds)]):
-        print(f"lower bounds and thresholds are equivalent.")
+        logger.update_instance(path_to_instance.stem, "lower bounds == thresholds", True)
     else:
-        print(f"lower bounds and thresholds differ.")
-    print()
+        logger.update_instance(path_to_instance.stem, "lower bounds == thresholds", False)
 
-    plot = True
+    if all([ub == None for ub in upper_bounds]):
+        logger.update_instance(path_to_instance.stem, "no upper bounds on any objective node", True)
+    else:
+        logger.update_instance(path_to_instance.stem, "no upper bounds on any objective node", False)
+
+    plot = False
     if plot:
         # Create a plotly figure
         fig = go.Figure()
