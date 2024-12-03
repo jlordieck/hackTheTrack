@@ -7,9 +7,11 @@ from zipfile import ZipFile
 
 from tqdm import tqdm
 from ugraph import EndNodeIdPair
+from ugraph.plot import ColorMap, add_2d_ugraph_to_figure
 
 from hackthetrack.dependencygraph import DependencyGraph, Link, LinkType
 from hackthetrack.displib import DisplibInstance
+from scripts.assign_directions import use_igraph_to_update_x_and_y_coordinates
 
 
 def add_precedence_links(network: DependencyGraph) -> None:
@@ -61,8 +63,13 @@ def load_and_convert_all_displib_instances(options: Options = Options()) -> None
     for path_to_instance in tqdm(all_paths, desc="Converting instances", colour="green", unit="instance"):
         network = DependencyGraph.from_displib_instance(DisplibInstance.from_json(path_to_instance))
         network.write_json(options.path_to_dependency_graphs / f"{path_to_instance.name}.DependencyGraph.json")
+        use_igraph_to_update_x_and_y_coordinates(network)
         if options.do_standard_figure:
             network.debug_plot(options.path_to_figures / f"{path_to_instance.stem}.jpg")
+            add_2d_ugraph_to_figure(network, color_map=ColorMap(defaultdict(lambda: "black"))).write_html(
+                options.path_to_figures / f"{path_to_instance.stem}.html"
+            )
+
         if options.do_precedence_figure:
             add_precedence_links(network)
             network.debug_plot(options.path_to_figures / f"{path_to_instance.stem}.with_precedence_links.jpg")

@@ -24,6 +24,7 @@ class Link(LinkABC):
 @unique
 class NodeType(BaseNodeType):
     OPERATION = 1
+    RESOURCE = 2
 
 
 @dataclass(frozen=True, slots=True)

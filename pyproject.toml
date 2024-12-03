@@ -7,7 +7,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "~3.10"
-ugraph = { version = "^0.72.0", extras = ["plotting"] }
+ugraph = { version = "^0.73.0", extras = ["plotting"] }
 tqdm = "^4.62.3"
 
 [tool.poetry.urls]

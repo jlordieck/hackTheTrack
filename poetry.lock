@@ -503,13 +503,13 @@ files = [
 
 [[package]]
 name = "ugraph"
-version = "0.72.0"
+version = "0.73.0"
 description = ""
 optional = false
-python-versions = "<4.0,>=3.10"
+python-versions = "<3.11,>=3.10"
 files = [
-    {file = "ugraph-0.72.0-py3-none-any.whl", hash = "sha256:29aef5dce3dd7c15ff7470d43ec9910cbec2da4fd785aae28d4243b4a5a40554"},
-    {file = "ugraph-0.72.0.tar.gz", hash = "sha256:8295cf9d47d74ae20d71713ff33ec9a63a9b74f617f2c983903e8bce93c8f6e9"},
+    {file = "ugraph-0.73.0-py3-none-any.whl", hash = "sha256:603d521770d5fe518cc736ac40c2cc9eba2de45a60e1fa805f080924fdb5b7cc"},
+    {file = "ugraph-0.73.0.tar.gz", hash = "sha256:0916f6f36cc3d01aa7a829d17f58f53edf33f1c449bec749b469a9b772bd347e"},
 ]
 
 [package.dependencies]
@@ -523,4 +523,4 @@ plotting = ["plotly (>=5.24.1,<6.0.0)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "~3.10"
-content-hash = "08f166cfba463b89f503792c8fbc21a060e53f72152457a7ff4bce241d316d36"
+content-hash = "8808c0ea8dac6324e9d6b015b87fbb931dd3b88c7b3a7dfe3c23372f0ea3b4b6"
