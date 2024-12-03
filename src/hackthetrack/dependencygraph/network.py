@@ -1,7 +1,7 @@
 from ugraph import EndNodeIdPair, MutableNetworkABC, NodeId, ThreeDCoordinates
 
 from hackthetrack.dependencygraph.components import Link, LinkType, Node, NodeType
-from hackthetrack.displib.load_displib_instace import DisplibInstance
+from hackthetrack.displib.load_displib_instance import DisplibInstance
 
 
 class DependencyGraph(MutableNetworkABC[Node, Link, NodeType, LinkType]):
@@ -9,6 +9,9 @@ class DependencyGraph(MutableNetworkABC[Node, Link, NodeType, LinkType]):
     @classmethod
     def from_displib_instance(cls, instance: DisplibInstance) -> "DependencyGraph":
         return _create_dependency_graph(instance)
+
+    def node_by_train_id_and_index(self, train_id: int, index: int) -> Node:
+        return self.node_by_id(NodeId(f"train_{train_id}_op_{index}"))
 
 
 def _create_dependency_graph(instance: DisplibInstance) -> DependencyGraph:

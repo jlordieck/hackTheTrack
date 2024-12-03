@@ -1,1 +1,1 @@
-from .load_displib_instace import DisplibInstance
+from .load_displib_instance import DisplibInstance
