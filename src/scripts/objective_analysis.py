@@ -39,7 +39,7 @@ for path_to_instance in filter(lambda x: True, displib_directory.glob("*.json"))
         if objective["coeff"] and objective["increment"]:
             objective_types.append("mixed")
         else:
-            objective_types.append("coeff" if objective["coeff"] != 0.0 else "increment")
+            objective_types.append("linear" if objective["coeff"] != 0.0 else "step")
 
     all_trains_have_objective = len(set(train_ids)) == len(all_train_ids)
     logger.update_instance(path_to_instance.stem, "all trains have an objective", all_trains_have_objective)
@@ -56,11 +56,9 @@ for path_to_instance in filter(lambda x: True, displib_directory.glob("*.json"))
     no_upper_bounds = all([ub == None for ub in upper_bounds])
     logger.update_instance(path_to_instance.stem, "no upper bounds on any objective node", no_upper_bounds)
 
-    objective_type = "coeff" if all([objective_type == "coeff" for objective_type in objective_types]) else "mixed"
+    objective_type = "linear" if all([objective_type == "linear" for objective_type in objective_types]) else "mixed"
     if objective_type == "mixed":
-        objective_type = (
-            "increment" if all([objective_type == "increment" for objective_type in objective_types]) else "mixed"
-        )
+        objective_type = "step" if all([objective_type == "step" for objective_type in objective_types]) else "mixed"
     logger.update_instance(path_to_instance.stem, "objective type", objective_type)
 
     plot = False
