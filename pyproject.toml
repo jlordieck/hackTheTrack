@@ -9,6 +9,7 @@ readme = "README.md"
 python = "~3.10"
 ugraph = { version = "^0.73.0", extras = ["plotting"] }
 tqdm = "^4.62.3"
+pandas = "^2.2.3"
 
 [tool.poetry.urls]
 homepage = "https://www.ivt.ethz.ch/"
