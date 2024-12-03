@@ -7,7 +7,7 @@ from hackthetrack.displib.load_displib_instance import DisplibInstance
 
 displib_directory = Path("out/instances/displib_instances_phase1")
 
-for path_to_instance in filter(lambda x: x.stem == "line2_headway_0", displib_directory.glob("*.json")):
+for path_to_instance in displib_directory.glob("*.json"):
     instance = DisplibInstance.from_json(path_to_instance)
     network = DependencyGraph.from_displib_instance(instance)
 
@@ -23,8 +23,14 @@ for path_to_instance in filter(lambda x: x.stem == "line2_headway_0", displib_di
         operation = objective["operation"]
         node = network.node_by_train_id_and_index(train_id, operation)
         thresholds.append(objective["threshold"])
-        lower_bounds.append(node.start_lb)
-        upper_bounds.append(node.start_ub)
+        if node.start_lb is None:
+            lower_bounds.append(0.0)
+        else:
+            lower_bounds.append(node.start_lb)
+        if node.start_ub is None:
+            upper_bounds.append(objective["threshold"])
+        else:
+            upper_bounds.append(node.start_ub)
 
     print(f"Instance {path_to_instance.stem}")
     if len(train_ids) == len(set(train_ids)):
@@ -43,32 +49,29 @@ for path_to_instance in filter(lambda x: x.stem == "line2_headway_0", displib_di
         # Create a plotly figure
         fig = go.Figure()
 
-        # Add lower and upper bound as filled area
-        fig.add_trace(
-            go.Scatter(
-                x=train_ids, y=lower_bounds, mode="lines", line=dict(width=0), showlegend=False, name="Lower Bound"
-            )
-        )
         fig.add_trace(
             go.Scatter(
                 x=train_ids,
-                y=upper_bounds,
-                fill="tonexty",  # Fill area between the lines
-                mode="lines",
-                line=dict(width=0),
-                fillcolor="rgba(0, 100, 200, 0.2)",
-                name="Bound Range",
+                y=[upper - lower for upper, lower in zip(upper_bounds, lower_bounds)],
+                mode="markers",
+                marker=dict(size=10, color="blue"),
+                name="Upper bound relative to lower bound",
             )
         )
 
-        # Add threshold points
         fig.add_trace(
-            go.Scatter(x=train_ids, y=thresholds, mode="markers", marker=dict(size=10, color="red"), name="Thresholds")
+            go.Scatter(
+                x=train_ids,
+                y=[threshold - lower for threshold, lower in zip(thresholds, lower_bounds)],
+                mode="markers",
+                marker=dict(size=10, color="red"),
+                name="Threshold relative to lower bound",
+            )
         )
 
         # Update layout for better readability
         fig.update_layout(
-            title=f"Objectives and Node Bounds for {path_to_instance.stem}",
+            title=f"Threshold and upper bound for {path_to_instance.stem}",
             xaxis_title="Train ID",
             yaxis_title="Time",
             legend_title="Legend",
