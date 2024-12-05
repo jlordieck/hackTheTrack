@@ -9,7 +9,6 @@ from hackthetrack.statistics_logger import StatisticsLogger
 
 
 def main():
-    global train_id
     logger = StatisticsLogger()
     displib_directory = Path("out/instances/displib_instances_phase1")
     for path_to_instance in filter(lambda x: True, displib_directory.glob("*.json")):
@@ -50,79 +49,79 @@ def main():
                 increments[objective["increment"]] += 1
 
         all_trains_have_objective = len(set(train_ids)) == len(all_train_ids)
-        logger.update_instance(path_to_instance.stem, "all trains have an objective", all_trains_have_objective)
+        instance_id = path_to_instance.stem
+        logger.update_instance(instance_id, "all trains have an objective", all_trains_have_objective)
 
         one_objective_per_train = len(train_ids) == len(set(train_ids))
-        logger.update_instance(path_to_instance.stem, "one objective per train", one_objective_per_train)
+        logger.update_instance(instance_id, "one objective per train", one_objective_per_train)
 
         objectives_on_last_node = all(objective_on_last_node.values())
-        logger.update_instance(path_to_instance.stem, "objective always on last node", objectives_on_last_node)
+        logger.update_instance(instance_id, "objective always on last node", objectives_on_last_node)
 
         lower_bounds_equal_thresholds = all([lb == threshold for lb, threshold in zip(lower_bounds, thresholds)])
-        logger.update_instance(path_to_instance.stem, "lower bounds == thresholds", lower_bounds_equal_thresholds)
+        logger.update_instance(instance_id, "lb bounds == thresholds", lower_bounds_equal_thresholds)
 
-        no_upper_bounds = all([ub == None for ub in upper_bounds])
-        logger.update_instance(path_to_instance.stem, "no upper bounds on any objective node", no_upper_bounds)
+        no_upper_bounds = all([ub is None for ub in upper_bounds])
+        logger.update_instance(instance_id, "no ub bounds on any objective node", no_upper_bounds)
 
-        objective_type = "linear" if all(
-            [objective_type == "linear" for objective_type in objective_types]) else "mixed"
+        objective_type = (
+            "linear" if all([objective_type == "linear" for objective_type in objective_types]) else "mixed"
+        )
         if objective_type == "mixed":
-            objective_type = "step" if all(
-                [objective_type == "step" for objective_type in objective_types]) else "mixed"
-        logger.update_instance(path_to_instance.stem, "objective type", objective_type)
+            objective_type = (
+                "step" if all([objective_type == "step" for objective_type in objective_types]) else "mixed"
+            )
+        logger.update_instance(instance_id, "objective type", objective_type)
 
         all_coeffs_are_one = all([coeff == 1.0 for coeff in coeffs if coeff != 0.0])
-        logger.update_instance(path_to_instance.stem, "all coeffs are 1", all_coeffs_are_one)
+        logger.update_instance(instance_id, "all coeffs are 1", all_coeffs_are_one)
 
         if increments:
-            logger.update_instance(path_to_instance.stem, "occurrences of penalty values for steps", dict(increments))
+            logger.update_instance(instance_id, "occurrences of penalty values for steps", dict(increments))
+
+        release_times = {resource.release_time for node in network.all_nodes for resource in node.resources}
+        logger.update_instance(instance_id, "release times", sorted(release_times))
 
         objective_to_ignore = [
             threshold - lower < 0
             for threshold, lower, objective_type in zip(thresholds, lower_bounds, objective_types)
             if objective_type == "step"
         ]
-        if objective_to_ignore:
-            logger.update_instance(path_to_instance.stem, "number of step objectives to ignore",
-                                   sum(objective_to_ignore))
+        if len(objective_to_ignore) > 0:
+            logger.update_instance(instance_id, "number of step objectives to ignore", sum(objective_to_ignore))
 
-        plot = False
-        if plot:
-            # Create a plotly figure
-            fig = go.Figure()
+        if plot := True:
+            # Create a plotly figure (no shit sherlock)
+            figure = go.Figure()
 
-            fig.add_trace(
+            figure.add_trace(
                 go.Scatter(
                     x=train_ids,
-                    y=[upper - lower if upper is not None else None for upper, lower in
-                       zip(upper_bounds, lower_bounds)],
+                    y=[None if ub is None else ub - lb for ub, lb in zip(upper_bounds, lower_bounds)],
                     mode="markers",
-                    marker=dict(size=10, color="blue"),
-                    name="Upper bound relative to lower bound",
+                    marker={"size": 10, "color": "blue"},
+                    name="Upper bound relative to lb bound",
                 )
             )
 
-            fig.add_trace(
+            figure.add_trace(
                 go.Scatter(
                     x=train_ids,
                     y=[threshold - lower for threshold, lower in zip(thresholds, lower_bounds)],
                     mode="markers",
-                    marker=dict(size=10, color="red"),
-                    name="Threshold relative to lower bound",
+                    marker={"size": 10, "color": "red"},
+                    name="Threshold relative to lb bound",
                 )
             )
 
-            # Update layout for better readability
-            fig.update_layout(
-                title=f"Threshold and upper bound for {path_to_instance.stem}",
+            figure.update_layout(
+                title=f"Threshold and ub bound for {instance_id}",
                 xaxis_title="Train ID",
                 yaxis_title="Time",
                 legend_title="Legend",
                 template="plotly_white",
             )
-
-            # Display the figure
-            fig.show()
+            figure.write_html(Path(f"out/figures/{instance_id}_threshold_and_upper_bound.html"))
 
 
 if __name__ == "__main__":

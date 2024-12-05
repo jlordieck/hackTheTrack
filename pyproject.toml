@@ -10,6 +10,7 @@ python = "~3.10"
 ugraph = { version = "^0.73.0", extras = ["plotting"] }
 tqdm = "^4.62.3"
 pandas = "^2.2.3"
+pyyaml = "^6.0.2"
 
 [tool.poetry.urls]
 homepage = "https://www.ivt.ethz.ch/"
@@ -20,6 +21,7 @@ black = "~24.10.0"
 radon = "~6.0.1"
 pylint = "~3.3.2"
 mypy = "~1.13.0"
+
 
 
 [build-system]
