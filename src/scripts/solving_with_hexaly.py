@@ -1,6 +1,15 @@
+from pathlib import Path
 import hexaly.optimizer
 
+from hackthetrack.dependencygraph.network import DependencyGraph
+from hackthetrack.displib.load_displib_instance import DisplibInstance
 
+displib_instance_path = Path("out/instances/displib_instances_phase1/line1_critical_0.json")
+instance = DisplibInstance.from_json(displib_instance_path)
+network = DependencyGraph.from_displib_instance(instance)
+
+operations = [node.index for node in network.all_nodes]
+num_operations = len(network.all_nodes)
 
 with hexaly.optimizer.HexalyOptimizer() as optimizer:
     model = optimizer.get_model()
@@ -29,8 +38,20 @@ with hexaly.optimizer.HexalyOptimizer() as optimizer:
         model.constraint(model.and_(model.range(0, model.count(sequence) - 1), sequence_lambda))
 
     # no-wait and routing of trains
-    for train_operations in trains:
-        for i in train_operations:
-            
-
-    
+    for node in network.all_nodes:
+        neighbors = network.neighbors(node.id, "out")
+        if len(neighbors) == 0:
+            continue
+        elif len(neighbors) == 1:
+            model.add_constraint(
+                model.end(operation_array[node.index]) == model.start(operation_array[neighbors[0].index])
+            )
+        else:
+            model.add_constraint(
+                model.or_(
+                    [
+                        model.end(operation_array[node.index]) == model.start(operation_array[neighbor.index])
+                        for neighbor in neighbors
+                    ]
+                )
+            )
