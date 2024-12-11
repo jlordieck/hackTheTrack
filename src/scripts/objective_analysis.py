@@ -1,4 +1,4 @@
-from collections import defaultdict
+from collections import Counter, defaultdict
 from pathlib import Path
 
 import plotly.graph_objects as go
@@ -49,7 +49,11 @@ def main():
                 increments[objective["increment"]] += 1
 
         all_trains_have_objective = len(set(train_ids)) == len(all_train_ids)
+
         instance_id = path_to_instance.stem
+        objectives_per_train = Counter(train_ids)
+        logger.update_instance(instance_id, "objectives per train", dict(objectives_per_train))
+
         logger.update_instance(instance_id, "all trains have an objective", all_trains_have_objective)
 
         one_objective_per_train = len(train_ids) == len(set(train_ids))
@@ -63,6 +67,10 @@ def main():
 
         no_upper_bounds = all([ub is None for ub in upper_bounds])
         logger.update_instance(instance_id, "no ub bounds on any objective node", no_upper_bounds)
+
+        # no upper bounds on any node (except the first one)
+        no_upper_bounds = all(n.start_ub is None or n.start_ub == 0 for n in network.all_nodes)
+        logger.update_instance(instance_id, "no ub bounds on any node", no_upper_bounds)
 
         objective_type = (
             "linear" if all([objective_type == "linear" for objective_type in objective_types]) else "mixed"
