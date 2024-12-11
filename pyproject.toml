@@ -23,6 +23,14 @@ pylint = "~3.3.2"
 mypy = "~1.13.0"
 
 
+[[tool.poetry.source]]
+name = "hexaly"
+url = "https://pip.hexaly.com"
+priority = "supplemental"
+
+
+[tool.poetry.group.hexaly.dependencies]
+hexaly = {version = "^13.0.20241205", source = "hexaly"}
 
 [build-system]
 requires = ["poetry-core"]

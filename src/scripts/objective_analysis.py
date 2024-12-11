@@ -64,13 +64,39 @@ def main():
         no_upper_bounds = all([ub is None for ub in upper_bounds])
         logger.update_instance(instance_id, "no ub bounds on any objective node", no_upper_bounds)
 
-        objective_type = (
-            "linear" if all([objective_type == "linear" for objective_type in objective_types]) else "mixed"
-        )
-        if objective_type == "mixed":
-            objective_type = (
-                "step" if all([objective_type == "step" for objective_type in objective_types]) else "mixed"
+    objective_type = "linear" if all([objective_type == "linear" for objective_type in objective_types]) else "mixed"
+    if objective_type == "mixed":
+        objective_type = "step" if all([objective_type == "step" for objective_type in objective_types]) else "mixed"
+    logger.update_instance(path_to_instance.stem, "objective type", objective_type)
+
+    all_coeffs_are_one = all([coeff == 1.0 for coeff in coeffs if coeff != 0.0])
+    logger.update_instance(path_to_instance.stem, "all coeffs are 1", all_coeffs_are_one)
+
+    if increments:
+        logger.update_instance(path_to_instance.stem, "occurrences of penalty values for steps", dict(increments))
+
+    objective_to_ignore = [
+        threshold - lower < 0
+        for threshold, lower, objective_type in zip(thresholds, lower_bounds, objective_types)
+        if objective_type == "step"
+    ]
+    if objective_to_ignore:
+        logger.update_instance(path_to_instance.stem, "number of step objectives to ignore", sum(objective_to_ignore))
+
+    plot = True
+    if plot:
+        # Create a plotly figure
+        fig = go.Figure()
+
+        fig.add_trace(
+            go.Scatter(
+                x=train_ids,
+                y=[upper - lower if upper is not None else None for upper, lower in zip(upper_bounds, lower_bounds)],
+                mode="markers",
+                marker=dict(size=10, color="blue"),
+                name="Upper bound relative to lower bound",
             )
+        )
         logger.update_instance(instance_id, "objective type", objective_type)
 
         all_coeffs_are_one = all([coeff == 1.0 for coeff in coeffs if coeff != 0.0])
