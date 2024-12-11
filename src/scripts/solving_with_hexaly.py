@@ -15,7 +15,6 @@ def main():
     ]
     objective_node_indices = [node.index for node in objective_nodes]
 
-    operations = [node.index for node in network.all_nodes]
     num_operations = len(network.all_nodes)
 
     with hexaly.optimizer.HexalyOptimizer() as optimizer:
@@ -68,7 +67,7 @@ def main():
         # activate all trains
 
         # objective
-        model.minimize(model.sum(model.end(operation_array[i]) for i in objective_node_indices))
+        model.minimize(model.sum(model.start(operation_array[i]) for i in objective_node_indices))
         model.close()
 
         optimizer.solve()
