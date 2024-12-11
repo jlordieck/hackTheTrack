@@ -1,4 +1,4 @@
-from collections import defaultdict
+from collections import Counter, defaultdict
 from pathlib import Path
 
 import plotly.graph_objects as go
@@ -49,7 +49,11 @@ def main():
                 increments[objective["increment"]] += 1
 
         all_trains_have_objective = len(set(train_ids)) == len(all_train_ids)
+
         instance_id = path_to_instance.stem
+        objectives_per_train = Counter(train_ids)
+        logger.update_instance(instance_id, "objectives per train", dict(objectives_per_train))
+
         logger.update_instance(instance_id, "all trains have an objective", all_trains_have_objective)
 
         one_objective_per_train = len(train_ids) == len(set(train_ids))
